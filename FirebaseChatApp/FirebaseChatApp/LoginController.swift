@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import Firebase
+import FirebaseAuth
 
 class LoginController: UIViewController {
 
@@ -26,13 +28,47 @@ class LoginController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitleColor(UIColor.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+        
+        button.addTarget(self, action: #selector(handleRegister), for: .touchUpInside)
+        
         return button
     }()
+    
+    func handleRegister() {
+        guard let email = emailTextField.text, let password = passwordTextField.text, let name = nameTextField.text else {
+            print("Form is not valid.")
+            return
+        }
+        FIRAuth.auth()?.createUser(withEmail: email, password: password, completion: { (user: FIRUser?, error) in
+            if error != nil {
+                print(error!)
+                return
+            }
+            
+            guard let uid = user?.uid else {
+                return
+            }
+            
+            // Successfully authenticated user.
+            let ref = FIRDatabase.database().reference(fromURL: "https://letsbuildthatapptutorial.firebaseio.com/")
+            let usersReference = ref.child("users").child(uid)
+            let values = ["names": name, "email": email]
+            usersReference.updateChildValues(values, withCompletionBlock: {(err, ref) in
+                if err != nil {
+                    print(err!)
+                    return
+                }
+                print("Saved user successfully into Firebase database.")
+            })
+        })
+    }
     
     let nameTextField: UITextField = {
         let tf = UITextField()
         tf.placeholder = "Name"
         tf.translatesAutoresizingMaskIntoConstraints = false
+        tf.autocorrectionType = .no
+        tf.autocapitalizationType = .words
         return tf
     }()
     
@@ -40,6 +76,9 @@ class LoginController: UIViewController {
         let tf = UITextField()
         tf.placeholder = "Email address"
         tf.translatesAutoresizingMaskIntoConstraints = false
+        tf.keyboardType = .emailAddress
+        tf.autocorrectionType = .no
+        tf.autocapitalizationType = .none
         return tf
     }()
     
@@ -48,6 +87,7 @@ class LoginController: UIViewController {
         tf.placeholder = "Password"
         tf.translatesAutoresizingMaskIntoConstraints = false
         tf.isSecureTextEntry = true
+        tf.autocorrectionType = .no
         return tf
     }()
 
