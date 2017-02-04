@@ -76,7 +76,7 @@ class LoginController: UIViewController {
             // Successfully authenticated user.
             let ref = FIRDatabase.database().reference(fromURL: "https://letsbuildthatapptutorial.firebaseio.com/")
             let usersReference = ref.child("users").child(uid)
-            let values = ["names": name, "email": email]
+            let values = ["name": name, "email": email]
             usersReference.updateChildValues(values, withCompletionBlock: {(err, ref) in
                 if err != nil {
                     print(err!)
@@ -105,6 +105,9 @@ class LoginController: UIViewController {
         let tf = UITextField()
         tf.placeholder = "Email"
         tf.translatesAutoresizingMaskIntoConstraints = false
+        tf.keyboardType = .emailAddress
+        tf.autocorrectionType = .no
+        tf.autocapitalizationType = .none
         return tf
     }()
     
@@ -194,8 +197,8 @@ class LoginController: UIViewController {
         // Need x, y, width, height contraints.
         profileImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         profileImageView.bottomAnchor.constraint(equalTo: loginRegisterSegmentedControl.topAnchor, constant: -40).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 150).isActive = true
-        profileImageView.heightAnchor.constraint(equalToConstant: 150).isActive = true
+        profileImageView.widthAnchor.constraint(equalToConstant: 120).isActive = true
+        profileImageView.heightAnchor.constraint(equalToConstant: 120).isActive = true
     }
     
     var inputsContainerViewHeightAnchor: NSLayoutConstraint?
