@@ -17,9 +17,20 @@ class ViewController: UITableViewController {
                 
         // Creates logout button at the top left of the navigation controller.
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
+        
+        if FIRAuth.auth()?.currentUser?.uid == nil {
+            performSelector(onMainThread: #selector(handleLogout), with: nil, waitUntilDone: true)
+        }
     }
     
     func handleLogout() {
+        
+        do {
+            try FIRAuth.auth()?.signOut()
+        } catch let logoutError {
+            print(logoutError)
+        }
+        
         let loginController = LoginController()
         present(loginController, animated: true, completion: nil)
     }
