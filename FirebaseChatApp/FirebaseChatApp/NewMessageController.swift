@@ -27,14 +27,12 @@ class NewMessageController: UITableViewController {
     func fetchUser() {
         FIRDatabase.database().reference().child("users").observe(.childAdded, with: {(snapshot) in
             
-            print(snapshot)
             if let dictionary = snapshot.value as? [String: AnyObject] {
                 let user = User()
                 
                 // Warning: if you use this setter, your app will crash if your class properties don't exactly match up with the Firebase dictionary keys.
                 user.setValuesForKeys(dictionary)
                 self.users.append(user)
-                print(user.name!, user.email!)
                 
                 // This will crash because of background thread, so let's use dispatch_async to fix
                 DispatchQueue.main.async {
@@ -56,20 +54,51 @@ class NewMessageController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // Let use a hack for now.
         //let cell = UITableViewCell(style: .subtitle, reuseIdentifier: cellId)
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! UserCell
         
         let user = users[indexPath.row]
         cell.textLabel?.text = user.name
         cell.detailTextLabel?.text = user.email
-        print("I SHOULD HAVE SHOWED YOU \(user.name)")
+        
+        if let profileImageUrl = user.profileImageUrl {
+            cell.profileImageView.loadImageUsingCacheWith(urlString: profileImageUrl)
+        }
+        
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 180
     }
 }
 
 class UserCell: UITableViewCell {
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        textLabel?.frame = CGRect(x: 64, y: textLabel!.frame.origin.y - 2, width: textLabel!.frame.width, height: textLabel!.frame.height)
+        detailTextLabel?.frame = CGRect(x: 64, y: detailTextLabel!.frame.origin.y + 2, width: detailTextLabel!.frame.width, height: detailTextLabel!.frame.height)
+    }
+    
+    let profileImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "chat_bubble")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.layer.masksToBounds = true
+        imageView.layer.cornerRadius = 24
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
+    
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
+        addSubview(profileImageView)
+        
+        // Need x, y, width, height anchors
+        profileImageView.leftAnchor.constraint(equalTo: self.leftAnchor, constant: 8).isActive = true
+        profileImageView.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+        profileImageView.widthAnchor.constraint(equalToConstant: 48).isActive = true
+        profileImageView.heightAnchor.constraint(equalToConstant: 48).isActive = true
     }
     
     required init?(coder aDecoder: NSCoder) {

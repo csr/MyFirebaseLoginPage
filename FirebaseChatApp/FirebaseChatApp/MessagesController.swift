@@ -44,7 +44,6 @@ class MessagesController: UITableViewController {
                 } else {
                     print("error! snapshot value: \(snapshot.value)")
                 }
-                print(snapshot)
             })
         }
     }
