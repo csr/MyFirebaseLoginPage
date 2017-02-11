@@ -11,7 +11,7 @@ import Firebase
 import FirebaseStorage
 
 extension LoginController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    
+        
     func handleRegister() {
         guard let name = nameTextField.text, let email = emailTextField.text, let password = passwordTextField.text else {
             print("Form is not valid")
@@ -31,9 +31,9 @@ extension LoginController: UIImagePickerControllerDelegate, UINavigationControll
             
             // Successfully authenticated user.
             let imageName = NSUUID().uuidString // Guaranteed unique string
-            let storageRef = FIRStorage.storage().reference().child("profile_images").child("\(imageName).png")
+            let storageRef = FIRStorage.storage().reference().child("profile_images").child("\(imageName).jpg")
             
-            if let uploadData = UIImagePNGRepresentation(self.profileImageView.image!) {
+            if let uploadData = UIImageJPEGRepresentation(self.profileImageView.image!, 0.1) {
                 
                 storageRef.put(uploadData, metadata: nil, completion: { (metadata, error) in
                     
@@ -63,6 +63,9 @@ extension LoginController: UIImagePickerControllerDelegate, UINavigationControll
                 print(err!)
                 return
             }
+            
+            self.messagesController?.navigationItem.title = values["name"] as! String?
+            
             self.dismiss(animated: true, completion: nil)
         })
     }

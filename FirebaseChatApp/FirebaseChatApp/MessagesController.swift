@@ -30,22 +30,26 @@ class MessagesController: UITableViewController {
     }
     
     func checkIfUserIsLoggedIn() {
-        let UserUid = FIRAuth.auth()?.currentUser?.uid
-        
-        if UserUid == nil {
+        if FIRAuth.auth()?.currentUser?.uid == nil {
             performSelector(onMainThread: #selector(handleLogout), with: nil, waitUntilDone: true)
         } else {
-            // Fetch of a single value.
-            FIRDatabase.database().reference().child("users").child(UserUid!).observe(.value, with: {
-            (snapshot) in
-                
-                if let dictionary = snapshot.value as? [String: AnyObject] {
-                    self.navigationItem.title = dictionary["name"] as? String
-                } else {
-                    print("error! snapshot value: \(snapshot.value)")
-                }
-            })
+            fetchUserAndSetupNavBarTitle()
         }
+    }
+    
+    func fetchUserAndSetupNavBarTitle() {
+        guard let uid = FIRAuth.auth()?.currentUser?.uid else {
+            return
+        }
+        
+        // Fetch of a single value.
+        FIRDatabase.database().reference().child("users").child(uid).observe(.value, with: {
+            (snapshot) in
+            
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                self.navigationItem.title = dictionary["name"] as? String
+            }
+        })
     }
     
     func handleLogout() {
@@ -57,6 +61,7 @@ class MessagesController: UITableViewController {
         }
         
         let loginController = LoginController()
+        loginController.messagesController = self
         present(loginController, animated: true, completion: nil)
     }
 }
